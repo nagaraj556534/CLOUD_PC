@@ -2,6 +2,8 @@ name: CI
 
 on:
   push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
@@ -25,6 +27,11 @@ jobs:
         Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -Value 0
         Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
         Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
+
+    - name: Create Local User
+      run: |
+        net user runneradmin P@ssw0rd! /add
+        net localgroup Administrators runneradmin /add
 
     - name: Create Ngrok Tunnel for Port 3389
       run: .\ngrok\ngrok.exe tcp 3389
