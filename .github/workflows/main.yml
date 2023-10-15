@@ -30,8 +30,8 @@ jobs:
 
     - name: Create Local User
       run: |
-        net user runneradmin P@ssw0rd! /add
-        net localgroup Administrators runneradmin /add
+        net user nagaadmin P@ssw0rd! /add
+        net localgroup Administrators nagaadmin /add
 
     - name: Create Ngrok Tunnel for Port 3389
       run: .\ngrok\ngrok.exe tcp 3389
