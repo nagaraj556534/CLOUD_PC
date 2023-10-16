@@ -1,37 +1,30 @@
 name: CI
+
 on:
   push:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: windows-latest
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+    - name: Download ngrok
+      run: Invoke-WebRequest https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-windows-amd64.zip -OutFile ngrok.zip
 
-    - name: Download Ngrok
-      run: |
-        Invoke-WebRequest https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-windows-amd64.zip -OutFile ngrok.zip
-        Expand-Archive ngrok.zip -DestinationPath ngrok
+    - name: Extract ngrok
+      run: Expand-Archive ngrok.zip
+
+    - name: Authenticate with ngrok
+      run: .\ngrok\ngrok.exe authtoken $Env:NGROK_AUTH_TOKEN
+      env:
+        NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
 
     - name: Enable Remote Desktop
       run: |
-        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
+        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server'-name "fDenyTSConnections" -Value 0
         Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name "UserAuthentication" -Value 1
-        $SecurePassword = ConvertTo-SecureString -AsPlainText "P@ssw0rd!" -Force
-        New-LocalUser -Name "runneradmin" -Password $SecurePassword -FullName "Runner Admin" -Description "Runner Admin Account" -UserMayNotChangePassword $true -PasswordNeverExpires $true
+        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
+        Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "P@ssw0rd!" -Force)
 
-    - name: Run Ngrok
-      run: |
-        echo @echo off > start_ngrok.bat
-        echo set NGROK_AUTH_TOKEN=${{ secrets.NGROK_AUTH_TOKEN }} >> start_ngrok.bat
-        echo .\ngrok\ngrok authtoken %%NGROK_AUTH_TOKEN%% >> start_ngrok.bat
-        echo .\ngrok\ngrok tcp 3389 >> start_ngrok.bat
-        .\start_ngrok.bat
-
-    # Add more steps as needed for your specific workflow
+    - name: Create ngrok tunnel to remote desktop
+      run: .\ngrok\ngrok.exe start --all
