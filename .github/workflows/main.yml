@@ -3,31 +3,45 @@ name: CI
 on:
   push:
   workflow_dispatch:
-
 jobs:
   build:
     runs-on: windows-latest
+
     steps:
-    - name: Download ngrok
-      run: Invoke-WebRequest https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-windows-amd64.zip -OutFile ngrok.zip
-      
-    - name: Extract ngrok
-      run: Expand-Archive ngrok.zip
-    - name: Authenticate with ngrok
-      run: .\ngrok\ngrok.exe authtoken $Env:NGROK_AUTH_TOKEN
-      env:
-        NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Download Ngrok
+      run: |
+        Invoke-WebRequest https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-windows-amd64.zip -OutFile ngrok.zip
+        Expand-Archive ngrok.zip -DestinationPath ngrok
+      # You can replace the Ngrok URL with the latest version if needed
+
+    - name: Authenticate with Ngrok
+      run: .\ngrok\ngrok authtoken ${{ secrets.NGROK_AUTH_TOKEN }}
+
     - name: Enable Remote Desktop
       run: |
-        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server'-name "fDenyTSConnections" -Value 0
+        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
         Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
-        Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "P@ssw0rd!" -Force)
+        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name "UserAuthentication" -Value 1
 
-         
-    - name: Create Local User
+    - name: Create user and set password
       run: |
-        net user nagaadmin P@ssw0rd! /add
-        net localgroup Administrators nagaadmin /add
-    - name: Create ngrok tunnel to remote desktop
-      run: .\ngrok\ngrok.exe tcp 3389
+        net user yourusername yourpassword /add
+        net localgroup "Remote Desktop Users" yourusername /add
+      env:
+        yourusername: "NagarajM"  # Replace with your desired username
+        yourpassword: "Password123"  # Replace with your desired password
+
+    - name: Create Ngrok tunnel
+      run: |
+        echo "authtoken: ${{ secrets.NGROK_AUTH_TOKEN }}" > ngrok.yml
+        echo "tunnels:" >> ngrok.yml
+        echo "  remote_desktop:" >> ngrok.yml
+        echo "    proto: tcp" >> ngrok.yml
+        echo "    addr: 3389" >> ngrok.yml
+        .\ngrok\ngrok start -config ngrok.yml remote_desktop
+
+    # Add more steps as needed for your specific workflow
+
