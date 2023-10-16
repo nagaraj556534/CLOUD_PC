@@ -27,13 +27,13 @@ jobs:
 
     - name: Create User and Set Password
       run: |
-        $SecurePassword = ConvertTo-SecureString -String "YourCompliantPassword" -AsPlainText -Force
-        New-LocalUser -Name "YourUsername" -Password $SecurePassword -FullName "Your Full Name" -Description "Your Description" -AccountNeverExpires $true -UserMayNotChangePassword $false -PasswordNeverExpires $true
-        Add-LocalGroupMember -Group "Remote Desktop Users" -Member "YourUsername"
+        $SecurePassword = ConvertTo-SecureString -String "Password123" -AsPlainText -Force
+        New-LocalUser -Name "NagaraM" -Password $SecurePassword -FullName "NagaraM Full Name" -Description "NagaraM Description" -UserMayNotChangePassword $true -PasswordNeverExpires $true
+        Add-LocalGroupMember -Group "Remote Desktop Users" -Member "NagaraM"
       env:
-        YourUsername: "NagarajM"  # Replace with your desired username
-        YourCompliantPassword: "Password123"  # Replace with a compliant password
-        
+        YourUsername: "NagaraM"  # Username set to "NagaraM"
+        YourCompliantPassword: "Password123"  # Password set to "Password123"
+
     - name: Create Ngrok tunnel
       run: |
         echo "authtoken: ${{ secrets.NGROK_AUTH_TOKEN }}" > ngrok.yml
@@ -44,3 +44,4 @@ jobs:
         .\ngrok\ngrok start -config ngrok.yml remote_desktop
 
     # Add more steps as needed for your specific workflow
+
