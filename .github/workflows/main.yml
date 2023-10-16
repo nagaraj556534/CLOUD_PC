@@ -1,5 +1,4 @@
-name: Create Ngrok Tunnel and Enable Remote Desktop
-
+name: CI
 on:
   push:
   workflow_dispatch:
