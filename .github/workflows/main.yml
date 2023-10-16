@@ -27,12 +27,12 @@ jobs:
 
     - name: Create User and Set Password
       run: |
-        $SecurePassword = ConvertTo-SecureString -String "Password123" -AsPlainText -Force
-        New-LocalUser -Name "NagaraM" -Password $SecurePassword -FullName "NagaraM Full Name" -Description "NagaraM Description" -UserMayNotChangePassword $true -PasswordNeverExpires $true
-        Add-LocalGroupMember -Group "Remote Desktop Users" -Member "NagaraM"
+        $SecurePassword = ConvertTo-SecureString -String "P@ssw0rd!" -AsPlainText -Force
+        New-LocalUser -Name "runneradmin" -Password $SecurePassword -FullName "runneradmin" -Description "NagaraM Description" -UserMayNotChangePassword $true -PasswordNeverExpires $true
+        Add-LocalGroupMember -Group "Remote Desktop Users" -Member "runneradmin"
       env:
-        YourUsername: "NagaraM"  # Username set to "NagaraM"
-        YourCompliantPassword: "Password123"  # Password set to "Password123"
+        YourUsername: "runneradmin"  # Username set to "NagaraM"
+        YourCompliantPassword: "P@ssw0rd!"  # Password set to "Password123"
 
     - name: Create Ngrok tunnel
       run: |
