@@ -1,4 +1,5 @@
 name: CI
+
 on:
   push:
   workflow_dispatch:
@@ -29,8 +30,15 @@ jobs:
         Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "P@ssw0rd!" -Force)
       # Replace "runneradmin" and "P@ssw0rd!" with your desired username and password
 
-    - name: Create Ngrok tunnel to remote desktop
-      run: .\ngrok\ngrok tcp 3389
-      # You can change the port (3389) to match your remote desktop configuration
+    - name: Create Ngrok tunnel using configuration file
+      run: |
+        echo "authtoken: $NGROK_AUTH_TOKEN" > ngrok.yml
+        echo "tunnels:" >> ngrok.yml
+        echo "  remote_desktop:" >> ngrok.yml
+        echo "    proto: tcp" >> ngrok.yml
+        echo "    addr: 3389" >> ngrok.yml
+        .\ngrok\ngrok start -config ngrok.yml remote_desktop
+      env:
+        NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
 
     # Add more steps as needed for your specific workflow
